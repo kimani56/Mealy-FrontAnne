@@ -28,7 +28,7 @@ const Register = () => {
   useEffect(() => {
     if (isAuthenticated) {
       // If registered (hence authenticated), redirect to the dashboard.
-      history.push('/dashboard');
+      history.push('/login');
     }
 
     if (error) {
@@ -56,7 +56,10 @@ const Register = () => {
 
     // Dispatching the registerUser action with the user data.
     dispatch(registerUser(newUser));
+    
   };
+  
+  
 
   // JSX for the Register component.
   return (

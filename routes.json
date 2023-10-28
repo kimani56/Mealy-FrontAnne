@@ -1,0 +1,5 @@
+{
+    "/api/users/register": "/users",
+    "/api/users/signIn": "/users"
+  }
+  

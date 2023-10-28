@@ -1,10 +1,9 @@
-// src/api.js
-
 import axios from 'axios';
 
 // Create an Axios instance
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // You should replace this URL with your Flask backend URL
+  baseURL: 'http://localhost:5000',
+
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,10 +21,15 @@ API.interceptors.request.use((req) => {
 /* ------------------ User/Auth Related Requests ------------------ */
 
 // User Registration
-export const signUp = (formData) => API.post('/user/signup', formData);
+export const register = async (formData) => {
+  const response = await API.post('/api/users/register', formData);
+  // Redirect to the login page after successful registration
+  window.location.href = "/login";
+  return response;
+};
 
 // User Login
-export const signIn = (formData) => API.post('/user/signin', formData);
+export const signIn = (formData) => API.post('/api/users/signIn', formData);
 
 /* ------------------ Caterer Related Requests ------------------ */
 
@@ -68,8 +72,6 @@ export const fetchTodaysOrders = () => API.get('/orders/today');
 
 // View total amount of money made by end of day
 export const fetchTodaysEarnings = () => API.get('/earnings/today');
-
-// Extra features can include endpoints for notifications, multiple caterers, etc.
 
 // Export the API instance for global usage
 export default API;

@@ -1,5 +1,3 @@
-// src/components/Layout/Navbar.js
-
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
@@ -41,25 +39,13 @@ const Navbar = () => {
     </ul>
   );
 
-  // Links displayed when user is not authenticated
-  const guestLinks = (
-    <ul>
-      <li>
-        <Link to="/register">Sign Up</Link>
-      </li>
-      <li>
-        <Link to="/login">Login</Link>
-      </li>
-    </ul>
-  );
-
   return (
     <nav>
       <div>
         <Link to="/">
           <strong>Mealy</strong>
         </Link>
-        {isAuthenticated && user.role === 'admin' ? adminLinks : (isAuthenticated ? authLinks : guestLinks)}
+        {isAuthenticated && user.role === 'admin' ? adminLinks : (isAuthenticated ? authLinks : null)}
       </div>
     </nav>
   );
