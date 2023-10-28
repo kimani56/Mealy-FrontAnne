@@ -27,6 +27,9 @@ export const register = async (formData) => {
   window.location.href = "/login";
   return response;
 };
+export const googleAuth = () => API.get('/api/users/auth/google');
+export const facebookAuth = () => API.get('/api/users/auth/facebook');
+export const emailAuth = (formData) => API.post('/api/users/auth/email', formData);
 
 // User Login
 export const signIn = (formData) => API.post('/api/users/signIn', formData);

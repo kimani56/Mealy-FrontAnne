@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import './styles.css'; // Ensure you import the styles
+import Modal from './Modal.js'; // Assuming you have a modal component. If not, you'll need to create one.
 
 const Dashboard = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleGetStartedClick = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   return (
     <div>
@@ -29,7 +39,7 @@ const Dashboard = () => {
                 <input type="text" placeholder="What are you craving today?" />
                 <button>Search</button>
               </div>
-              <a href="/register" className="cta-button">Get Started</a>
+              <button onClick={handleGetStartedClick} className="cta-button">Get Started</button>
             </section>
 
             <section className="services">
@@ -79,6 +89,18 @@ const Dashboard = () => {
           </>
         ) : (
           <p>Welcome back! Here are your dashboard details...</p>
+        )}
+
+        {showModal && (
+          <Modal onClose={handleCloseModal}>
+            <h2>Welcome</h2>
+            <p>Continue with one of the following options</p>
+            <button onClick={() => window.location.href = "/google-auth"}>Google</button>
+            <button onClick={() => window.location.href = "/facebook-auth"}>Facebook</button>
+            <button onClick={() => window.location.href = "/email-auth"}>Email</button>
+            <button onClick={handleCloseModal}>Skip for Now</button>
+            <p>By creating an account, you automatically accept our Terms of Service, Privacy Policy, and Cookies Policy.</p>
+          </Modal>
         )}
       </main>
 
