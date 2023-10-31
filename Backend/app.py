@@ -79,37 +79,36 @@ def favicon():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    print(data)
 
     # Validate incoming data
     if not data or not data.get('username') or not data.get('password') or not data.get('email'):
         return jsonify({"message": "Incomplete registration data!"}), 400
 
     # Optional: validate the role
-    if 'role' in data and data['role'] not in ['admin', 'customer']:
+    if 'role' in data and data['role'] not in ['admin', 'customer', 'caterer']:
         return jsonify({"message": "Invalid role specified!"}), 400
 
     hashed_password = generate_password_hash(data['password'], method='sha256')
 
     # Check if the user already exists
-    from app import db
-    db.create_all()
     existing_user = User.query.filter_by(username=data['username']).first()
 
     if existing_user:
         return jsonify({"error": "username_taken", "message": "Username already taken!"}), 409
-
-        # return jsonify({"message": "Username already taken!"}), 409
 
     role = data.get('role', 'customer')  # default to 'customer' if role is not provided
     new_user = User(username=data['username'], password=hashed_password, email=data['email'], role=role)
     db.session.add(new_user)
     db.session.commit()
 
-    # This is where you would redirect the user to the appropriate dashboard based on their role
-    # This redirection logic would typically be implemented on the frontend.
+    # If the role is 'caterer', create a corresponding Caterer record
+    if role == 'caterer':
+        new_caterer = Caterer(user_id=new_user.id, name=data['username'])
+        db.session.add(new_caterer)
+        db.session.commit()
 
     return jsonify({"message": f"User registered successfully as a {role}!"}), 201
+
 
 
 @app.route('/login', methods=['POST'])
@@ -142,8 +141,6 @@ def add_meal():
         return jsonify({"message": "Unauthorized action!"}), 403
        
 
-    
-    
 
     data = request.get_json()
 
@@ -159,11 +156,43 @@ def add_meal():
 @app.route('/meals', methods=['GET'])
 @jwt_required
 def get_all_meals():
-    current_user_id = get_jwt_identity()
-    caterer = Caterer.query.filter_by(user_id=current_user_id).first()
-    meals = Meal.query.filter_by(caterer_id=caterer.id).all()
-    meals_data = [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
-    return jsonify({"meals": meals_data}), 200
+    try:
+        current_user_id = get_jwt_identity()
+        caterer = Caterer.query.filter_by(user_id=current_user_id).first()
+
+        # Check if caterer is found
+        if not caterer:
+            return jsonify({"message": "Caterer not found!"}), 404
+
+        meals = Meal.query.filter_by(caterer_id=caterer.id).all()
+        meals_data = [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
+
+        return jsonify({"meals": meals_data}), 200
+    except Exception as e:
+        # Log the error for debugging
+        app.logger.error(f"Error fetching meals: {str(e)}")
+        return jsonify({"error": "An error occurred while processing the request."}), 422
+
+
+# @app.route('/meals', methods=['GET'])
+# def get_all_meals():
+#     try:
+#         # Replace with the actual user_id you just inserted.
+#         sample_user_id = 15
+#         caterer = Caterer.query.filter_by(user_id=sample_user_id).first()
+
+#         # Check if caterer is found
+#         if not caterer:
+#             return jsonify({"message": "Caterer not found!"}), 404
+
+#         meals = Meal.query.filter_by(caterer_id=caterer.id).all()
+#         meals_data = [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
+
+#         return jsonify({"meals": meals_data}), 200
+#     except Exception as e:
+#         # Log the error for debugging
+#         app.logger.error(f"Error fetching meals: {str(e)}")
+#         return jsonify({"error": "An error occurred while processing the request."}), 422
 
 
 @app.route('/meals/<int:meal_id>', methods=['PUT', 'DELETE'])
