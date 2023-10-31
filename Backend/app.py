@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
@@ -110,7 +110,6 @@ def register():
     return jsonify({"message": f"User registered successfully as a {role}!"}), 201
 
 
-
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -119,16 +118,18 @@ def login():
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"message": "Incomplete login data!"}), 400
 
-    # user = User.query.filter_by(username=data['email']).first()
+    # Query user from the database
     user = User.query.filter_by(email=data['email']).first()
 
-
+    # Validate credentials
     if not user or not check_password_hash(user.password, data['password']):
         return jsonify({"message": "Invalid credentials!"}), 401
 
+    # If credentials are valid, create access token
     access_token = create_access_token(identity=user.id)
-    return jsonify({"access_token": access_token, "isAuthenticated": True}), 200
 
+    # Return access token along with user ID and name
+    return jsonify({"access_token": access_token, "isAuthenticated": True, "user_id": user.id, "name": user.username}), 200
 
 
 @app.route('/meals', methods=['POST'])
@@ -154,25 +155,58 @@ def add_meal():
     return jsonify({"message": "Meal added successfully!"}), 201
 
 @app.route('/meals', methods=['GET'])
-@jwt_required
-def get_all_meals():
+def get_meals():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        # Return a 422 response if user_id is not provided
+        return jsonify({"error": "User ID is required"}), 422
+    
+    # Perform server-side validation, for example, check if user_id is valid
     try:
-        current_user_id = get_jwt_identity()
-        caterer = Caterer.query.filter_by(user_id=current_user_id).first()
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({"error": "Invalid User ID"}), 422
+    
+    # Fetch meals from database or other data source
+    meals = get_meals_from_db(user_id)
+    if not meals:
+        return jsonify({"error": "No meals found for the given user ID"}), 422
+    
+    # Return meals data
+    return jsonify({"meals": meals}), 200
 
-        # Check if caterer is found
-        if not caterer:
-            return jsonify({"message": "Caterer not found!"}), 404
+def get_meals_from_db(user_id):
+    caterer = Caterer.query.filter_by(user_id=user_id).first()
+    if not caterer:
+        return None
+    meals = Meal.query.filter_by(caterer_id=caterer.id).all()
+    return [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
 
-        meals = Meal.query.filter_by(caterer_id=caterer.id).all()
-        meals_data = [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
 
-        return jsonify({"meals": meals_data}), 200
-    except Exception as e:
-        # Log the error for debugging
-        app.logger.error(f"Error fetching meals: {str(e)}")
-        return jsonify({"error": "An error occurred while processing the request."}), 422
+# @app.route('/meals', methods=['GET'])
+# def get_all_meals():
+#     try:
+#         # Try getting the user ID from the session or some other method
+#         current_user_id = session.get('user_id')
 
+#         # Check if a user ID is found
+#         if not current_user_id:
+#             return jsonify({"error": "User not logged in"}), 401
+
+#         caterer = Caterer.query.filter_by(user_id=current_user_id).first()
+
+#         # Check if caterer is found
+#         if not caterer:
+#             return jsonify({"message": "Caterer not found!"}), 404
+
+#         meals = Meal.query.filter_by(caterer_id=caterer.id).all()
+#         meals_data = [{"id": meal.id, "name": meal.name, "description": meal.description, "price": meal.price, "image_url": meal.image_url} for meal in meals]
+
+#         return jsonify({"meals": meals_data}), 200
+#     except Exception as e:
+#         # Log the error for debugging
+#         app.logger.error(f"Error fetching meals: {str(e)}")
+#         return jsonify({"error": "An error occurred while processing the request."}), 422
 
 # @app.route('/meals', methods=['GET'])
 # def get_all_meals():
