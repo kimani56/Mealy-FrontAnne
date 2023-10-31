@@ -44,7 +44,6 @@ const authSlice = createSlice({
   },
 });
 
-// Destructure and export actions for easy use in components/dispatch
 export const {
   registerSuccess,
   registerFailure,

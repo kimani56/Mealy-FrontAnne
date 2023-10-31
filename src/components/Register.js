@@ -1,72 +1,74 @@
-// Necessary imports for the component.
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-// Import the action creator for the registration process.
-import { registerUser } from '../redux/actions/authActions.js'; // Ensure this action is defined in your authActions file.
+import './Register.css';
+import { registerUser } from '../redux/actions/authActions.js';
 
 const Register = () => {
-  // State hooks for registration fields and errors.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('user');  // Hook for role
+  const [role, setRole] = useState('user');
+  const [username, setUsername] = useState('');
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Hook to dispatch actions to the Redux store.
   const dispatch = useDispatch();
-
-  // Hook to interact with the history object of the router.
   const history = useHistory();
 
-  // Accessing the auth state from the Redux store.
   const auth = useSelector((state) => state.auth);
-  // Extracting specific properties from the auth state.
   const { isAuthenticated, error } = auth;
 
-  // Effect hook to perform side effects when certain conditions are met.
   useEffect(() => {
+    let timeoutId;
+
     if (isAuthenticated) {
-      // If registered (hence authenticated), redirect to the dashboard.
-      history.push('/login');
+      setSuccessMessage("Successfully Registered!");
+      timeoutId = setTimeout(() => {
+        setSuccessMessage('');
+        role === "user" ? history.push('/login-user') : history.push('/login-admin');
+      }, 2000);
     }
 
-    if (error) {
-      // If there are errors, set them in the local state to display.
+    if (error && error.error === "username_taken") {
+      setErrors(prevErrors => ({ ...prevErrors, username: error.message }));
+    } else if (error) {
       setErrors(error);
     }
-  }, [isAuthenticated, error, history]);
 
-  // Handler for the form submission event.
+    return () => {
+      clearTimeout(timeoutId);
+    };
+
+  }, [isAuthenticated, error, role, history, errors]);
+
   const handleSubmit = (e) => {
-    e.preventDefault(); // Preventing default form submission behavior.
+    e.preventDefault();
 
     if (password !== confirmPassword) {
-      // Client-side password confirmation check.
-      setErrors({ ...errors, confirmPassword: "Passwords don't match" });
+      setErrors(prevErrors => ({ ...prevErrors, confirmPassword: "Passwords don't match" }));
       return;
     }
 
-    // Creating a user data object from the input values.
-    const newUser = {
-      email,
-      password,
-      role  // Added role to the user data object
-    };
-
-    // Dispatching the registerUser action with the user data.
+    const newUser = { username, email, password, role };
     dispatch(registerUser(newUser));
-    
   };
-  
-  
 
-  // JSX for the Register component.
   return (
-    <div>
-      <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
-        {/* Input field for the email address. */}
+    <div className="register-container">
+      <h1 className="register-title">Register</h1>
+      {successMessage && <div className="success-message">{successMessage}</div>}
+      <form className="register-form" onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
+            className="register-form-input"
+          />
+          <span className="register-form-error">{errors.username}</span>
+        </div>
         <div>
           <input
             type="email"
@@ -74,10 +76,10 @@ const Register = () => {
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             error={errors.email}
+            className="register-form-input"
           />
-          <span>{errors.email}</span>
+          <span className="register-form-error">{errors.email}</span>
         </div>
-        {/* Input field for the password. */}
         <div>
           <input
             type="password"
@@ -85,10 +87,10 @@ const Register = () => {
             onChange={(e) => setPassword(e.target.value)}
             value={password}
             error={errors.password}
+            className="register-form-input"
           />
-          <span>{errors.password}</span>
+          <span className="register-form-error">{errors.password}</span>
         </div>
-        {/* Input field for confirming the password. */}
         <div>
           <input
             type="password"
@@ -96,27 +98,25 @@ const Register = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             value={confirmPassword}
             error={errors.confirmPassword}
+            className="register-form-input"
           />
-          <span>{errors.confirmPassword}</span>
+          <span className="register-form-error">{errors.confirmPassword}</span>
         </div>
-        {/* Dropdown for selecting role */}
         <div>
-          <label>
+          <label className="register-form-label">
             Role:
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <select value={role} onChange={(e) => setRole(e.target.value)} className="register-form-input">
               <option value="user">User</option>
               <option value="admin">Admin/Caterer</option>
             </select>
           </label>
         </div>
-        {/* Submit button for the form. */}
         <div>
-          <button type="submit">Register</button>
+          <button type="submit" className="register-form-button">Register</button>
         </div>
       </form>
     </div>
   );
 };
 
-// Exporting the Register component to be used elsewhere.
 export default Register;

@@ -22,17 +22,20 @@ API.interceptors.request.use((req) => {
 
 // User Registration
 export const register = async (formData) => {
-  const response = await API.post('/api/users/register', formData);
-  // Redirect to the login page after successful registration
-  window.location.href = "/login";
+  const response = await API.post('/register', formData);
+  alert('Registration successful');
+  if (response.status === 409) {
+    throw new Error('Username already exists');
+  }
   return response;
 };
-export const googleAuth = () => API.get('/api/users/auth/google');
-export const facebookAuth = () => API.get('/api/users/auth/facebook');
-export const emailAuth = (formData) => API.post('/api/users/auth/email', formData);
+
+export const googleAuth = () => API.get('/auth/google');
+export const facebookAuth = () => API.get('/auth/facebook');
+export const emailAuth = (formData) => API.post('/auth/email', formData);
 
 // User Login
-export const signIn = (formData) => API.post('/api/users/signIn', formData);
+export const signIn = (formData) => API.post('/signIn', formData);
 
 /* ------------------ Caterer Related Requests ------------------ */
 
@@ -54,27 +57,27 @@ export const deleteMeal = (id) => API.delete(`/meals/${id}`);
 // Caterer setting up the menu for the day
 export const createMenu = (menuData) => API.post('/menu', menuData);
 
-/* ------------------ Customer Related Requests ------------------ */
-
 // Fetch menu for the day
-export const fetchMenu = () => API.get(`/menu/today`);
+export const fetchMenu = (caterer_id) => API.get('/menu', {params: { caterer_id }});
 
 // Place an order
-export const placeOrder = (orderData) => API.post('/orders', orderData);
+export const placeOrder = (orderData) => API.post('/order', orderData);
 
 // Change meal choice (i.e., update the order)
-export const updateOrder = (id, updatedOrderData) => API.put(`/orders/${id}`, updatedOrderData);
+export const updateOrder = (updatedOrderData) => API.put('/order', updatedOrderData);
 
 // Fetch order history for a customer
-export const fetchOrderHistory = () => API.get('/orders/myorders');
+export const fetchOrderHistory = (user_id) => API.get('/order/history', {params: { user_id }});
+
+// export const fetchOrderHistory = (user_id) => API.get('/history', {params: { user_id }});
 
 /* ------------------ Admin (Caterer) Specific Requests ------------------ */
 
 // View all orders for the day
-export const fetchTodaysOrders = () => API.get('/orders/today');
+export const fetchTodaysOrders = (caterer_id) => API.get('/orders', {params: { caterer_id }});
 
 // View total amount of money made by end of day
-export const fetchTodaysEarnings = () => API.get('/earnings/today');
+export const fetchTodaysEarnings = (caterer_id) => API.get('/earnings', {params: { caterer_id }});
 
 // Export the API instance for global usage
 export default API;

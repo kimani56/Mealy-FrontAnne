@@ -8,11 +8,11 @@ const AdminDashboard = () => {
     <div>
       <h1>Admin Dashboard</h1>
       <ul>
-        <li><Link to="/admin/manage-meals">Manage Meals</Link></li>
-        <li><Link to="/admin/set-menu">Set Menu for the Day</Link></li>
-        <li><Link to="/admin/view-orders">View Orders</Link></li>
-        <li><Link to="/admin/view-earnings">View Earnings</Link></li>
-        <li><Link to="/admin/order-history">Order History</Link></li>
+        <li><Link to="/meals">Manage Meals</Link></li>
+        <li><Link to="/menu">Set Menu for the Day</Link></li>
+        <li><Link to="/orders">View Orders</Link></li>
+        <li><Link to="/earnings">View Earnings</Link></li>
+        <li><Link to="/history">Order History</Link></li>
       </ul>
     </div>
   );

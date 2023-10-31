@@ -9,7 +9,7 @@ const DayMenu = () => {
         // If you know the menuId or other criteria to fetch the data, you can define it here.
         const menuId = 'YOUR_MENU_ID'; // replace 'YOUR_MENU_ID' with your menuId or other criteria.
 
-        fetch(`YOUR_API_ENDPOINT/menu/${menuId}`)
+        fetch(`/menu/${menuId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

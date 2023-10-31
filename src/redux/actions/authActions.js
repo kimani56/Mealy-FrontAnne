@@ -3,7 +3,7 @@ import axios from 'axios';
 export const registerUser = (userData) => {
   return async (dispatch) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/users/register', userData);
+      const response = await axios.post('http://localhost:5000/register', userData);
       // Assuming the token is returned as part of the response data.
       localStorage.setItem('authToken', response.data.token);
       dispatch({
@@ -11,13 +11,23 @@ export const registerUser = (userData) => {
         payload: response.data 
       });
     } catch (error) {
-      dispatch({
-        type: 'REGISTER_FAIL',
-        payload: error.response?.data
-      });
+      if (error.response?.data?.message === 'Username already taken!') {
+
+      // if (error.response?.data?.message === 'Username already exists') {
+        dispatch({
+          type: 'REGISTER_FAIL',
+          payload: { username: 'Username already exists' }
+        });
+      } else {
+        dispatch({
+          type: 'REGISTER_FAIL',
+          payload: error.response?.data
+        });
+      }
     }
   };
 };
+
 
 export const getUserDetails = () => {
   return async (dispatch) => {

@@ -1,20 +1,18 @@
-// features/mealSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import API from '../api.js';
 
 export const fetchMeals = createAsyncThunk(
   'meals/fetchMeals',
   async () => {
-    const response = await axios.get('/api/meals');
-    return response.data;
+     const response = await API.get('/meals'); // Use API instance here
+     return response.data;
   }
 );
 
 export const addMeal = createAsyncThunk(
   'meals/addMeal',
   async (mealData) => {
-    const response = await axios.post('/api/meals', mealData);
+    const response = await API.post('/meals', mealData);
     return response.data;
   }
 );

@@ -28,6 +28,20 @@ const authReducer = (state = initialState, action) => {
                 user: {},
                 error: null
             };
+        case 'REGISTER_SUCCESS':   // Added this case
+            return {
+                ...state,
+                isAuthenticated: true,
+                user: action.payload,
+                error: null
+            };
+        case 'REGISTER_FAIL':   // Added this case
+            return {
+                ...state,
+                isAuthenticated: false,
+                user: {},
+                error: action.payload
+            };
         default:
             return state;
     }

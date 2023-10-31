@@ -95,9 +95,9 @@ const Dashboard = () => {
           <Modal onClose={handleCloseModal}>
             <h2>Welcome</h2>
             <p>Continue with one of the following options</p>
-            <button onClick={() => window.location.href = "/google-auth"}>Google</button>
-            <button onClick={() => window.location.href = "/facebook-auth"}>Facebook</button>
-            <button onClick={() => window.location.href = "/email-auth"}>Email</button>
+            <button onClick={() => window.location.href = "/register"}>Google</button>
+            <button onClick={() => window.location.href = "/register"}>Facebook</button>
+            <button onClick={() => window.location.href = "/register"}>Email</button>
             <button onClick={handleCloseModal}>Skip for Now</button>
             <p>By creating an account, you automatically accept our Terms of Service, Privacy Policy, and Cookies Policy.</p>
           </Modal>

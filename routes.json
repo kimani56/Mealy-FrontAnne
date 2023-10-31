@@ -1,5 +1,5 @@
 {
-    "/api/users/register": "/users",
-    "/api/users/signIn": "/users"
+    "/register": "/users",
+    "/signIn": "/users"
   }
   

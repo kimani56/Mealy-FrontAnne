@@ -29,7 +29,7 @@ export const fetchOrders = () => {
         dispatch(fetchOrdersBegin());
 
         // Here, replace with your actual API endpoint
-        return axios.get('/api/orders')
+        return axios.get('http://localhost:5000/orders')
             .then(response => {
                 dispatch(fetchOrdersSuccess(response.data));
             })
