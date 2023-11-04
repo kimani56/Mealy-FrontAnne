@@ -29,12 +29,18 @@ API.interceptors.request.use((req) => {
 
 // User Registration
 export const register = async (formData) => {
-  const response = await API.post('/register', formData);
-  alert('Registration successful');
-  if (response.status === 409) {
-    throw new Error('Username already exists');
+  try {
+    const response = await API.post('/register', formData);
+    if (response.status === 409) {
+      throw new Error('Username or email already exists');
+    }
+    alert('Registration successful');
+    return response;
+  } catch (error) {
+    // Handle the error, e.g., display an error message
+    alert('Registration failed: ' + error.message);
+    throw error;
   }
-  return response;
 };
 
 export const googleAuth = () => API.get('/auth/google');

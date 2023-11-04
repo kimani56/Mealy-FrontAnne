@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { signIn } from '../api.js'; // Ensure this path is correct
+import { signUp } from '../api.js'; // Adjust the import to the correct path for your registration API
 
-const Login = () => {
+const Register = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
   const [errors, setErrors] = useState({});
 
   const history = useHistory();
@@ -15,7 +17,7 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      history.push(auth.role === "admin" ? '/admindashboard' : '/userdashboard');
+      history.push(auth.role === 'admin' ? '/admindashboard' : '/userdashboard');
     }
 
     if (error) {
@@ -27,7 +29,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const data = await signIn({ email, password }); // adjusted this line
+      const data = await signUp({ username, email, password, role });
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
 
       if (data.result.role === 'admin') {
@@ -37,9 +39,8 @@ const Login = () => {
       }
     } catch (error) {
       if (error.response && error.response.data) {
-        setErrors(error.response.data); // assuming the error format is consistent
+        setErrors(error.response.data);
       } else {
-        // handle differently if the error structure isn't as expected
         setErrors({ general: 'An error occurred. Please try again.' });
       }
     }
@@ -47,8 +48,17 @@ const Login = () => {
 
   return (
     <div>
-      <h1>Login</h1>
+      <h1>Register</h1>
       <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
+          />
+          {errors.username && <span>{errors.username}</span>}
+        </div>
         <div>
           <input
             type="email"
@@ -67,13 +77,22 @@ const Login = () => {
           />
           {errors.password && <span>{errors.password}</span>}
         </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Role"
+            onChange={(e) => setRole(e.target.value)}
+            value={role}
+          />
+          {errors.role && <span>{errors.role}</span>}
+        </div>
         {errors.general && <span>{errors.general}</span>}
         <div>
-          <button type="submit">Submit</button>
+          <button type="submit">Register</button>
         </div>
       </form>
     </div>
   );
 };
 
-export default Login;
+export default Register;
