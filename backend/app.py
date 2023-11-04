@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, create_refresh_token,
-    get_jwt_identity, get_jwt
+    get_jwt_identity
 )
 import json as _json
 from flask_migrate import Migrate
@@ -11,6 +11,7 @@ from sqlalchemy import ForeignKey, Integer, String, Float, DateTime, Text
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime, timedelta
+from flask import redirect, url_for
 
 
 app = Flask(__name__)
@@ -92,6 +93,10 @@ class Order(db.Model):
 def index():
     return "Welcome to my Flask application!"
 
+# ... (other imports and configurations)
+
+
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -103,32 +108,53 @@ def register():
             return jsonify({"error": "username_taken", "message": "Username already taken!"}), 409
         new_admin = Admin(username=data['username'], password=hashed_password, email=data['email'])
         db.session.add(new_admin)
+        db.session.commit()
+        return redirect(url_for('login_admin')), 201
     else:
         existing_user = User.query.filter_by(username=data['username']).first()
         if existing_user:
             return jsonify({"error": "username_taken", "message": "Username already taken!"}), 409
         new_user = User(username=data['username'], password=hashed_password, email=data['email'])
         db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login_user')), 201
 
-    db.session.commit()
-    return jsonify({"message": f"Registered successfully as a {data['role']}!"}), 201
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/login_admin', methods=['POST'])
+def login_admin():
     data = request.get_json()
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"message": "Incomplete login data!"}), 400
 
-    user = None
-    if data.get('role') == 'admin':
-        user = Admin.query.filter_by(email=data['email']).first()
-    else:
-        user = User.query.filter_by(email=data['email']).first()
+    admin = Admin.query.filter_by(email=data['email']).first()
+    if not admin or not check_password_hash(admin.password, data['password']):
+        return jsonify({"message": "Invalid credentials!"}), 401
+
+    access_token = create_access_token(identity=admin.id, additional_claims={"role": "admin"})
+    refresh_token = create_refresh_token(identity=admin.id)
+
+    return jsonify({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "isAuthenticated": True,
+        "user_id": admin.id,
+        "name": admin.username,
+        "role": "admin"
+    }), 200
+
+
+@app.route('/login_user', methods=['POST'])
+def login_user():
+    data = request.get_json()
+    if not data or not data.get('email') or not data.get('password'):
+        return jsonify({"message": "Incomplete login data!"}), 400
+
+    user = User.query.filter_by(email=data['email']).first()
 
     if not user or not check_password_hash(user.password, data['password']):
         return jsonify({"message": "Invalid credentials!"}), 401
 
-    access_token = create_access_token(identity=user.id, additional_claims={"role": data['role']})
+    access_token = create_access_token(identity=user.id, user_claims={"role": "user"})
     refresh_token = create_refresh_token(identity=user.id)
 
     return jsonify({
@@ -137,8 +163,10 @@ def login():
         "isAuthenticated": True,
         "user_id": user.id,
         "name": user.username,
-        "role": data['role']
+        "role": "customer"
     }), 200
+
+
 
 
 @app.route('/token/refresh', methods=['POST'])
@@ -150,82 +178,95 @@ def refresh():
     return jsonify({"access_token": access_token}), 200
 
 
-@app.route('/meals', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@jwt_required()
-def manage_meal_options():
-    current_user = get_jwt()
+@app.route('/meal-options', methods=['GET'])
+@jwt_required
+def get_meal_options():
+    meal_options = Meal.query.all()
+    meal_options_list = []
+
+    for meal_option in meal_options:
+        meal_option_dict = {
+            'id': meal_option.id,
+            'name': meal_option.name,
+            'description': meal_option.description,
+            'price': meal_option.price,
+            'image_url': meal_option.image_url,
+            'admin_id': meal_option.admin_id,
+            # Add other meal attributes you want to include in the response
+        }
+        meal_options_list.append(meal_option_dict)
+
+    return jsonify({"meal_options": meal_options_list})
+
+@app.route('/meal-options', methods=['POST'])
+@jwt_required
+def create_meal_option():
+    current_user = get_jwt_identity()
 
     # Check if the 'role' key exists and if the user's role is 'admin' to proceed
     if "role" not in current_user or current_user["role"] != "admin":
         return jsonify({"message": "Access denied"}), 403
 
-    if request.method == 'GET':
-        meal_options = Meal.query.all()
-        meal_options_list = []
+    meal_data = request.json
+    meal_name = meal_data.get('name')
+    meal_description = meal_data.get('description')
+    meal_price = meal_data.get('price')
+    meal_image_url = meal_data.get('image_url')
+    admin_id = meal_data.get('admin_id')
 
-        for meal_option in meal_options:
-            meal_option_dict = {
-                'id': meal_option.id,
-                'name': meal_option.name,
-                'description': meal_option.description,
-                'price': meal_option.price,
-                'image_url': meal_option.image_url,
-                'admin_id': meal_option.admin_id,
-                # Add other meal attributes you want to include in the response
-            }
-            meal_options_list.append(meal_option_dict)
+    if not meal_name or not meal_description or not meal_price or not meal_image_url or not admin_id:
+        return jsonify({"message": "Missing required fields"}), 400
 
-        return jsonify({"meal_options": meal_options_list})
+    new_meal = Meal(
+        name=meal_name,
+        description=meal_description,
+        price=meal_price,
+        image_url=meal_image_url,
+        admin_id=admin_id
+    )
 
-    elif request.method == 'POST':
-        meal_data = request.json
-        meal_name = meal_data.get('name')
-        meal_description = meal_data.get('description')
-        meal_price = meal_data.get('price')
-        meal_image_url = meal_data.get('image_url')
-        admin_id = meal_data.get('admin_id')
+    db.session.add(new_meal)
+    db.session.commit()
+    return jsonify({"message": "Meal added successfully"})
 
-        if not meal_name or not meal_description or not meal_price or not meal_image_url or not admin_id:
-            return jsonify({"message": "Missing required fields"}), 400
+@app.route('/meal-options/<int:meal_option_id>', methods=['PUT'])
+@jwt_required
+def update_meal_option(meal_option_id):
+    current_user = get_jwt_identity()
 
-        new_meal = Meal(
-            name=meal_name,
-            description=meal_description,
-            price=meal_price,
-            image_url=meal_image_url,
-            admin_id=admin_id
-        )
+    # Check if the 'role' key exists and if the user's role is 'admin' to proceed
+    if "role" not in current_user or current_user["role"] != "admin":
+        return jsonify({"message": "Access denied"}), 403
 
-        db.session.add(new_meal)
+    new_meal_option_name = request.json.get('new_meal_option')
+    if not new_meal_option_name:
+        return jsonify({"message": "New meal option name is required"}), 400
+
+    meal_option = Meal.query.get(meal_option_id)
+    if meal_option:
+        meal_option.name = new_meal_option_name
         db.session.commit()
-        return jsonify({"message": "Meal added successfully"})
-    
-    elif request.method == 'PUT':
-        meal_option_id = request.json.get('meal_option_id')
-        new_meal_option_name = request.json.get('new_meal_option')
-        if not meal_option_id or not new_meal_option_name:
-            return jsonify({"message": "Meal option ID and new name are required"}), 400
+        return jsonify({"message": "Meal option updated successfully"})
+    else:
+        return jsonify({"message": "Meal option not found"}), 404
 
-        meal_option = Meal.query.get(meal_option_id)
-        if meal_option:
-            meal_option.name = new_meal_option_name
-            db.session.commit()
-            return jsonify({"message": "Meal option updated successfully"})
-        else:
-            return jsonify({"message": "Meal option not found"}), 404
+@app.route('/meal-options/<int:meal_option_id>', methods=['DELETE'])
+@jwt_required
+def delete_meal_option(meal_option_id):
+    current_user = get_jwt_identity()
 
-    elif request.method == 'DELETE':
-        meal_option_id = request.json.get('meal_option_id')
-        if not meal_option_id:
-            return jsonify({"message": "Meal option ID is required"}), 400
+    # Check if the 'role' key exists and if the user's role is 'admin' to proceed
+    if "role" not in current_user or current_user["role"] != "admin":
+        return jsonify({"message": "Access denied"}), 403
 
-        meal_option = Meal.query.get(meal_option_id)
-        if meal_option:
-            db.session.delete(meal_option)
-            db.session.commit()
-            return jsonify({"message": "Meal option deleted successfully"})
-        else:
-            return jsonify({"message": "Meal option not found"}), 404
+    meal_option = Meal.query.get(meal_option_id)
+    if meal_option:
+        db.session.delete(meal_option)
+        db.session.commit()
+        return jsonify({"message": "Meal option deleted successfully"})
+    else:
+        return jsonify({"message": "Meal option not found"}), 404
+
 
 if __name__ == "__main__":
     with app.app_context():

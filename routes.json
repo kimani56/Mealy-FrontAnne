@@ -1,5 +1,8 @@
 {
     "/register": "/users",
-    "/signIn": "/users"
+   
+   
+    "/login_user": "/users",
+    "/login_admin": "/users"
   }
   

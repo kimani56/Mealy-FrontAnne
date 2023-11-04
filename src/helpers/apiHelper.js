@@ -27,6 +27,16 @@ export const registerUser = async (userData) => {
   }
 };
 
+// ================= ADMIN REGISTRATION =================
+export const registerAdmin = async (adminData) => {
+  try {
+    const response = await getAxiosInstance().post('/admin/register', adminData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // ================= MENU =================
 export const fetchMenu = async () => {
   try {

@@ -3,32 +3,41 @@ import axios from 'axios';
 export const registerUser = (userData) => {
   return async (dispatch) => {
     try {
-      const response = await axios.post('http://localhost:5000/register', userData);
-    
-      // Assuming the token is returned as part of the response data.
-      localStorage.setItem('authToken', response.data.token);
-      dispatch({
-        type: 'REGISTER_SUCCESS',
-        payload: response.data 
-      });
+      await axios.post('http://localhost:5000/register', userData);
+      
+      console.log("Registration successful, redirecting to login...");
+      // Redirecting to login is handled by the backend. No token at this step.
     } catch (error) {
-      if (error.response?.data?.message === 'Username already taken!') {
-
-      // if (error.response?.data?.message === 'Username already exists') {
-        dispatch({
-          type: 'REGISTER_FAIL',
-          payload: { username: 'Username already exists' }
-        });
-      } else {
-        dispatch({
-          type: 'REGISTER_FAIL',
-          payload: error.response?.data
-        });
-      }
+      console.log("Registration error:", error.response?.data);
+      dispatch({
+        type: 'REGISTER_FAIL',
+        payload: error.response?.data?.message ? { username: 'Username already exists' } : error.response?.data
+      });
     }
   };
 };
 
+export const loginUser = (loginData, role) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post(`http://localhost:5000/login_${role}`, loginData);
+      
+      console.log("Login successful, received tokens:", response.data);
+      localStorage.setItem('authToken', response.data.access_token);
+      localStorage.setItem('refreshToken', response.data.refresh_token);
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: response.data
+      });
+    } catch (error) {
+      console.log("Login error:", error.response?.data);
+      dispatch({
+        type: 'LOGIN_FAIL',
+        payload: error.response?.data
+      });
+    }
+  };
+};
 
 export const getUserDetails = () => {
   return async (dispatch) => {
@@ -38,11 +47,13 @@ export const getUserDetails = () => {
           'Authorization': 'Bearer ' + localStorage.getItem('authToken')
         }
       });
+      console.log("User details fetched:", response.data);
       dispatch({
         type: 'FETCH_USER_DETAILS_SUCCESS',
         payload: response.data 
       });
     } catch (error) {
+      console.log("Fetching user details error:", error.response?.data);
       dispatch({
         type: 'FETCH_USER_DETAILS_FAIL',
         payload: error.response?.data
@@ -51,15 +62,31 @@ export const getUserDetails = () => {
   };
 };
 
+export const refreshToken = () => {
+  return async () => {  // Removed 'dispatch' as it's not used
+    try {
+      const response = await axios.post('http://localhost:5000/token/refresh', {}, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('refreshToken')
+        }
+      });
+      console.log("Refresh token successful, received new access token:", response.data);
+      localStorage.setItem('authToken', response.data.access_token);
+      // Optionally dispatch an action to update the state
+    } catch (error) {
+      console.log("Token refresh error:", error.response?.data);
+      // Optionally dispatch an action for handling token refresh failure
+    }
+  };
+};
+
 export const logoutUser = () => {
   return (dispatch) => {
-    // 1. Clear the user's authentication token from local storage.
+    console.log("Logging out...");
     localStorage.removeItem('authToken');
-    
-    // 2. Dispatch the LOGOUT action to clear the user data from the Redux store.
+    localStorage.removeItem('refreshToken');
     dispatch({
       type: 'LOGOUT'
     });
   };
 };
-

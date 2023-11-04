@@ -9,7 +9,7 @@ const AdminLoginPage = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://localhost:5000/login', {
+            const response = await fetch('http://localhost:5000/login-admin', {
                 method: 'POST',
                 body: JSON.stringify({ email, password }),
                 headers: {

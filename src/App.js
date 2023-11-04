@@ -47,9 +47,10 @@ const App = () => {
       <div>
         <Switch>
           <Route path="/" component={Dashboard} exact />
-          <Route path="/login-user" component={UserLoginPage} />
-          <Route path="/login-admin" component={AdminLoginPage} />
+          <Route path="/login_user" component={UserLoginPage} />
+          <Route path="/login_admin" component={AdminLoginPage} />
           <Route path="/register" component={Register} /> 
+          <Route path="/admin/register" component={Register} /> 
           <Route path="/admin-dashboard" component={AdminDashboard} />
           <Route path="/user-dashboard" component={UserDashboard} />
           <PrivateRoute path="/dashboard" component={AdminDashboard} role="caterer" />

@@ -8,22 +8,21 @@ function UserLoginPage() {
     const history = useHistory();
 
     const handleLogin = async () => {
-      
-
-        const response = await fetch('/login', {
+        const response = await fetch('http://localhost:5000/login_user', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
             headers: { 'Content-Type': 'application/json' }
         });
-
+    
         const data = await response.json();
-
+    
         if (data.isAuthenticated) {
-            history.push('/user-dashboard'); 
+            history.push('/user-dashboard');
         } else {
             setErrors([...errors, "Authentication Failed"]);
         }
     }
+    
 
     return (
         <div>

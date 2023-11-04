@@ -1,4 +1,4 @@
-#!/home/beliya_user/Mealy-FrontAnne/backend/venv_name/bin/python3
+#!/home/beliya_user/Mealy-FrontAnne/backend/venv_name/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

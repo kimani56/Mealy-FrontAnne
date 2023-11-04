@@ -26,7 +26,7 @@ const Register = () => {
       setSuccessMessage("Successfully Registered!");
       timeoutId = setTimeout(() => {
         setSuccessMessage('');
-        role === "user" ? history.push('/login-user') : history.push('/login-admin');
+        role === "user" ? history.push('/login_user') : history.push('/login_admin');
       }, 2000);
     }
 
@@ -55,7 +55,7 @@ const Register = () => {
   };
 
   const handleLoginRedirect = (role) => {
-    role === 'user' ? history.push('/login-user') : history.push('/login-admin');
+    role === 'user' ? history.push('/login_user') : history.push('/login_admin');
   };
 
   return (
