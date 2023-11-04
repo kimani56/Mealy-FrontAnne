@@ -4,6 +4,7 @@ export const registerUser = (userData) => {
   return async (dispatch) => {
     try {
       const response = await axios.post('http://localhost:5000/register', userData);
+    
       // Assuming the token is returned as part of the response data.
       localStorage.setItem('authToken', response.data.token);
       dispatch({

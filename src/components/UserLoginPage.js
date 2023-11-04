@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-function AdminLoginPage() {
+function UserLoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState([]);
     const history = useHistory();
 
     const handleLogin = async () => {
-        // Your API call logic to login admin goes here.
-        // I'm mocking an example for simplicity:
+      
 
         const response = await fetch('/login', {
             method: 'POST',
@@ -20,7 +19,7 @@ function AdminLoginPage() {
         const data = await response.json();
 
         if (data.isAuthenticated) {
-            history.push('/admin-dashboard'); // Redirect to admin dashboard or any other admin-specific page
+            history.push('/user-dashboard'); 
         } else {
             setErrors([...errors, "Authentication Failed"]);
         }
@@ -28,7 +27,7 @@ function AdminLoginPage() {
 
     return (
         <div>
-            <h2>Admin Login</h2>
+            <h2>User Login</h2>
             <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
             <button onClick={handleLogin}>Login</button>
@@ -37,4 +36,4 @@ function AdminLoginPage() {
     );
 }
 
-export default AdminLoginPage;
+export default UserLoginPage;

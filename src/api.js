@@ -11,12 +11,22 @@ const API = axios.create({
 
 // Set the AUTH token for any request
 API.interceptors.request.use((req) => {
-  if (localStorage.getItem('profile')) {
-    req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem('profile')).token}`;
-  }
+  const token = localStorage.getItem('authToken');
+  
+// Log if token exists or not
+console.log('Token in localStorage:', token);
+
+if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+} else {
+    // Log if no token found
+    console.log("No token found in localStorage");
+}
+
 
   return req;
 });
+
 
 /* ------------------ User/Auth Related Requests ------------------ */
 

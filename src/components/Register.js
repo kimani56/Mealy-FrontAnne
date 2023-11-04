@@ -54,11 +54,16 @@ const Register = () => {
     dispatch(registerUser(newUser));
   };
 
+  const handleLoginRedirect = (role) => {
+    role === 'user' ? history.push('/login-user') : history.push('/login-admin');
+  };
+
   return (
     <div className="register-container">
       <h1 className="register-title">Register</h1>
       {successMessage && <div className="success-message">{successMessage}</div>}
       <form className="register-form" onSubmit={handleSubmit}>
+        {/* ... existing form fields */}
         <div>
           <input
             type="text"
@@ -115,6 +120,10 @@ const Register = () => {
           <button type="submit" className="register-form-button">Register</button>
         </div>
       </form>
+      <div className="login-buttons">
+        <button onClick={() => handleLoginRedirect('user')} className="login-button">Login as User</button>
+        <button onClick={() => handleLoginRedirect('admin')} className="login-button">Login as Admin</button>
+      </div>
     </div>
   );
 };

@@ -1,61 +1,89 @@
-import React, { useState, useEffect } from 'react';
 
-const DayMenu = () => {
-    const [meals, setMeals] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
 
-    useEffect(() => {
-        // If you know the menuId or other criteria to fetch the data, you can define it here.
-        const menuId = 'YOUR_MENU_ID'; // replace 'YOUR_MENU_ID' with your menuId or other criteria.
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-        fetch(`/menu/${menuId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setMeals(data.meals);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                setError(err.message);
-                setIsLoading(false);
-            });
+const MealList = () => {
+  const [meals, setMeals] = useState([]);
+  const [formData, setFormData] = useState({ name: '', description: '', price: '', image_url: '' });
+  const [error, setError] = useState(null);
 
-    }, []); // removed dependency on props from the dependency array
-
-    const handleSelectMeal = (mealId) => {
-        console.log("Meal selected: ", mealId);
-        // This function can be modified to interact with an API if needed.
-    };
-
-    if (isLoading) {
-        return <span>Loading...</span>;
+  const fetchMeals = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      console.log(token)
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const response = await axios.get('http://localhost:5000/meals', config);
+      setMeals(response.data.meals);
+    } catch (error) {
+      setError("Error fetching meals");
     }
+  };
 
-    if (error) {
-        return <span>Error: {error}</span>;
+  const addMeal = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const response = await axios.post('/meals', formData, config);
+      alert(response.data.message);
+      fetchMeals();
+    } catch (error) {
+      setError("Error adding meal");
     }
+  };
+ 
 
-    return (
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addMeal();
+  };
+
+  useEffect(() => {
+    fetchMeals();
+  }, []);
+
+  return (
+    <div>
+      <h1>Manage Meals</h1>
+      <form onSubmit={handleSubmit}>
         <div>
-            <h2>Menu for a specific date</h2> {/* Removed the date display based on props */}
-            <ul>
-                {meals.map(meal => (
-                    <li key={meal.id}>
-                        <h3>{meal.name}</h3>
-                        <p>{meal.description}</p>
-                        <p>Price: ${meal.price}</p>
-                        <img src={meal.image_url} alt={meal.name} width="100" />
-                        <button onClick={() => handleSelectMeal(meal.id)}>Select</button>
-                    </li>
-                ))}
-            </ul>
+          <label>Name: </label>
+          <input type="text" name="name" onChange={handleChange} />
         </div>
-    );
-}
+        <div>
+          <label>Description: </label>
+          <input type="text" name="description" onChange={handleChange} />
+        </div>
+        <div>
+          <label>Price: </label>
+          <input type="number" name="price" onChange={handleChange} />
+        </div>
+        <div>
+          <label>Image URL: </label>
+          <input type="text" name="image_url" onChange={handleChange} />
+        </div>
+        <button type="submit">Add Meal</button>
+      </form>
+      {error && <p>{error}</p>}
+      <h2>Meals</h2>
+      <ul>
+        {meals.map(meal => (
+          <li key={meal.id}>
+            <p>Name: {meal.name}</p>
+            <p>Description: {meal.description}</p>
+            <p>Price: ${meal.price}</p>
+            <img src={meal.image_url} alt={meal.name} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
-export default DayMenu;
+export default MealList;

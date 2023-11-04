@@ -12,22 +12,24 @@ const AdminLoginPage = () => {
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password }),
-
-                // body: JSON.stringify({ username: email, password }),
-
-                // body: JSON.stringify({ email, password }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
+           
 
-            
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
-            
 
             const data = await response.json();
+            console.log(data)
+
+            // Assuming that the token is part of the response data
+            if (data.access_token) {
+                localStorage.setItem('authToken', data.access_token);
+            }
+            
 
             if (data.isAuthenticated) {
                 history.push('/admin-dashboard'); // Redirect to admin dashboard
