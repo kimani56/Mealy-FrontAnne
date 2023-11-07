@@ -23,6 +23,7 @@ gunicorn = "*"
 flask-bcrypt = "*"
 flask-jwt-extended = "*"
 validators="*"
+flask-login="*"
 
 [dev-packages]
 

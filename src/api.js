@@ -59,13 +59,14 @@ export const fetchCaterers = () => API.get('/caterers');
 export const fetchCaterer = (id) => API.get(`/caterers/${id}`);
 
 // Caterer creating a meal
-export const createMeal = (mealData) => API.post('/meals', mealData);
+export const createMeal = (mealData) => API.post('http://localhost:5000/meals', mealData);
 
 // Caterer updating a meal
-export const updateMeal = (id, updatedMealData) => API.put(`/meals/${id}`, updatedMealData);
+export const updateMeal = (id, updatedMealData) => API.put(`http://localhost:5000/meals/${id}`, updatedMealData);
+
 
 // Caterer deleting a meal
-export const deleteMeal = (id) => API.delete(`/meals/${id}`);
+export const deleteMeal = (id) => API.delete(`http://localhost:5000/meals/${id}`);
 
 // Caterer setting up the menu for the day
 export const createMenu = (menuData) => API.post('/menu', menuData);

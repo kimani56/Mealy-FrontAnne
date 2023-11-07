@@ -8,7 +8,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('user');
+  const [role, setRole] = useState('customer'); // Updated to 'customer'
   const [username, setUsername] = useState('');
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -26,7 +26,7 @@ const Register = () => {
       setSuccessMessage("Successfully Registered!");
       timeoutId = setTimeout(() => {
         setSuccessMessage('');
-        role === "user" ? history.push('/login_user') : history.push('/login_admin');
+        role === "customer" ? history.push('/login_customer') : history.push('/login_admin');
       }, 2000);
     }
 
@@ -55,7 +55,7 @@ const Register = () => {
   };
 
   const handleLoginRedirect = (role) => {
-    role === 'user' ? history.push('/login_user') : history.push('/login_admin');
+    role === 'customer' ? history.push('/login_user') : history.push('/login_admin');
   };
 
   return (
@@ -111,7 +111,7 @@ const Register = () => {
           <label className="register-form-label">
             Role:
             <select value={role} onChange={(e) => setRole(e.target.value)} className="register-form-input">
-              <option value="user">User</option>
+              <option value="customer">Customer</option> {/* Updated to 'Customer' */}
               <option value="admin">Admin/Caterer</option>
             </select>
           </label>
@@ -121,7 +121,7 @@ const Register = () => {
         </div>
       </form>
       <div className="login-buttons">
-        <button onClick={() => handleLoginRedirect('user')} className="login-button">Login as User</button>
+        <button onClick={() => handleLoginRedirect('customer')} className="login-button">Login as Customer</button>
         <button onClick={() => handleLoginRedirect('admin')} className="login-button">Login as Admin</button>
       </div>
     </div>

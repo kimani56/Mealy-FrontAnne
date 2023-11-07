@@ -23,7 +23,7 @@ export const loginUser = (loginData, role) => {
       const response = await axios.post(`http://localhost:5000/login_${role}`, loginData);
       
       console.log("Login successful, received tokens:", response.data);
-      localStorage.setItem('authToken', response.data.access_token);
+      localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('refreshToken', response.data.refresh_token);
       dispatch({
         type: 'LOGIN_SUCCESS',
@@ -44,7 +44,7 @@ export const getUserDetails = () => {
     try {
       const response = await axios.get('http://localhost:5000/api/users/me', {
         headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+          'Authorization': 'Bearer ' + localStorage.getItem('access_token')
         }
       });
       console.log("User details fetched:", response.data);
@@ -71,7 +71,7 @@ export const refreshToken = () => {
         }
       });
       console.log("Refresh token successful, received new access token:", response.data);
-      localStorage.setItem('authToken', response.data.access_token);
+      localStorage.setItem('access_token', response.data.access_token);
       // Optionally dispatch an action to update the state
     } catch (error) {
       console.log("Token refresh error:", error.response?.data);
@@ -83,7 +83,7 @@ export const refreshToken = () => {
 export const logoutUser = () => {
   return (dispatch) => {
     console.log("Logging out...");
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('access_token');
     localStorage.removeItem('refreshToken');
     dispatch({
       type: 'LOGOUT'

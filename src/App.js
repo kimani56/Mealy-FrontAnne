@@ -25,8 +25,8 @@ const App = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        let token = localStorage.getItem('authToken');
-        console.log("Retrieved token:", token);
+        let token = localStorage.getItem('access-token');
+        // console.log("Retrieved token:", token);
   
         if (token) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -52,7 +52,7 @@ const App = () => {
           <Route path="/register" component={Register} /> 
           <Route path="/admin/register" component={Register} /> 
           <Route path="/admin-dashboard" component={AdminDashboard} />
-          <Route path="/user-dashboard" component={UserDashboard} />
+          <Route path="/customer-dashboard" component={UserDashboard} />
           <PrivateRoute path="/dashboard" component={AdminDashboard} role="caterer" />
           
           <Route path="/meals" component={MealList} />
