@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+
 import axios from 'axios';
 import Dashboard from './components/Dashboard.js';
 import UserLoginPage from './components/UserLoginPage.js'; 
@@ -42,6 +43,8 @@ const App = () => {
   }, [dispatch]);
 
   return (
+    
+    
     <Router>
       <Navbar />
       <div>
@@ -61,6 +64,7 @@ const App = () => {
           <Route path="/history" component={OrderItem} />
           <Route component={NotFound} />
         </Switch>
+        {/* <div className='container'><MealList/></div> */}
       </div>
     </Router>
   );

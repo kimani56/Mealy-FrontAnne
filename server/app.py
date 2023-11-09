@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, JWTManager, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required
 from flask_cors import CORS
-from .models import db, User, Meal, Order, Caterer, SerializerMixin
+from .models import db, User, Meal, Order, Caterer, MySerilizer
 from flask_login import current_user
 from datetime import date
 from flask_login import LoginManager, login_required
@@ -280,8 +280,9 @@ def set_menu(date):
 @app.route('/orders', methods=['GET'])
 def view_orders():
     orders = Order.query.all()
-    orders_list = [order.to_dict() for order in orders]
+    orders_list = [{"order_id":order.id, "user_id":order.user_id, "meal_id":order.meal_id, "quantity":order.quantity, "total_amount":order.total_amount} for order in orders]
     return jsonify({"orders": orders_list})
+
 
 @app.route('/order/<order_id>', methods=['PUT'])
 def change_order_status(order_id):
@@ -325,10 +326,11 @@ def view_caterer_earnings():
     return jsonify({"earnings": earnings})
 
 
-def calculate_caterer_earnings(caterer_id, date):
+def calculate_caterer_earnings(id, date):
+    if current_user.role == 'admin':
     # Perform a database query to fetch orders for the given caterer and date, and sum their total amounts
-    orders = Order.query.filter_by(user_id=caterer_id).filter_by(order_date=date).all()
-    total_earnings = sum(order.total_amount for order in orders)
+        orders = Order.query.filter_by(user_id=id).filter_by(order_date=date).all()
+        total_earnings = sum(order.total_amount for order in orders)
 
     return total_earnings
 

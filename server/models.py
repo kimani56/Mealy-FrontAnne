@@ -6,6 +6,7 @@ from sqlalchemy.orm import validates
 import bcrypt
 from werkzeug.security import generate_password_hash
 from flask_login import UserMixin
+from sqlalchemy_serializer import SerializerMixin
 
 
 metadata = MetaData(naming_convention={
@@ -20,7 +21,7 @@ class ValidationError(Exception):
     pass
 
 # added serilization
-class SerializerMixin:
+class MySerilizer:
     def as_dict(self):
         result = {}
         for c in self.__table__.columns:
@@ -63,7 +64,7 @@ class User(db.Model, UserMixin):
         return username
 
 # Define Caterer model
-class Caterer(db.Model, SerializerMixin):
+class Caterer(db.Model, MySerilizer):
     __tablename__ = 'caterers'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -83,7 +84,7 @@ class Caterer(db.Model, SerializerMixin):
         return name
 
 # Define Meal model
-class Meal(db.Model, SerializerMixin):
+class Meal(db.Model, MySerilizer, SerializerMixin):
     __tablename__ = 'meals'
     id = db.Column(db.Integer, primary_key=True)
     caterer_id = db.Column(db.Integer, db.ForeignKey('caterers.id'), nullable=False)
@@ -93,6 +94,8 @@ class Meal(db.Model, SerializerMixin):
     image_url = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # orders = db.relationship("Order", backref="meals")
 
     def __repr__(self):
         return f'<Meal(id={self.id}, name={self.name}, price={self.price})>'
@@ -121,7 +124,7 @@ class Meal(db.Model, SerializerMixin):
             return price
     
 # Define Menu model
-class Menu(db.Model, SerializerMixin):
+class Menu(db.Model, MySerilizer):
     __tablename__ = 'menus'
     id = db.Column(db.Integer, primary_key=True)
     caterer_id = db.Column(db.Integer, db.ForeignKey('caterers.id'), nullable=False)
@@ -134,7 +137,7 @@ class Menu(db.Model, SerializerMixin):
 
 
 # Define MenuMeals model
-class MenuMeals(db.Model, SerializerMixin):
+class MenuMeals(db.Model, MySerilizer):
     __tablename__ = 'menu_meals'
     menu_id = db.Column(db.Integer, db.ForeignKey('menus.id'), primary_key=True)
     meal_id = db.Column(db.Integer, db.ForeignKey('meals.id'), primary_key=True)
@@ -143,7 +146,7 @@ class MenuMeals(db.Model, SerializerMixin):
         return f'<MenuMeals(menu_id={self.menu_id}, meal_id={self.meal_id})>'
 
 # Define Order model
-class Order(db.Model, SerializerMixin):
+class Order(db.Model, MySerilizer, SerializerMixin):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -153,9 +156,17 @@ class Order(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
+    # meals = db.relationship('Meal', back_populates="orders")
 
     def __repr__(self):
-        return f'<Order(id={self.id}, user_id={self.user_id}, meal_id={self.meal_id}, quantity={self.quantity})>'
+        return f'<Order(id={self.id}, user_id={self.user_id}, meal_id={self.meal_id}, meals={self.meals}, quantity={self.quantity})>'
+    
+    @classmethod
+    def as_dict(cls):
+        result = {}
+        for c in cls.__table__.columns:
+            result[c.name] = getattr(cls, c.name)
+        return result
 
     @validates('quantity')
     def validate_quantity(self, key, quantity):

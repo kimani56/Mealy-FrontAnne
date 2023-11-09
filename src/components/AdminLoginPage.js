@@ -24,11 +24,14 @@ const AdminLoginPage = () => {
             }
 
             const data = await response.json();
-            console.log(data)
+            console.log("data",data)
 
-            if (data.access_token) {
-                localStorage.setItem('access-token', data.access_token);  // Change "access-token" to "access_token"
+            if (data["access-token"]) {
+                
+                localStorage.setItem('access-token', data["access-token"]);  // Change "access-token" to "access_token"
             }
+
+           
             
 
             if (data.message === 'Logged in successfully') {

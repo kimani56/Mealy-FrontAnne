@@ -1,12 +1,12 @@
 // src/helpers/authHelper.js
 
 export const saveToken = (token) => {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem('acess-token', token);
   };
   
   
   export const getToken = () => {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('access-token');
   };
  
   
@@ -19,7 +19,7 @@ export const saveToken = (token) => {
   };
   
   export const clearAuthInfo = () => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('acess-token');
     localStorage.removeItem('user');
   };
   
