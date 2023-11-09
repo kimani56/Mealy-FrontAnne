@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, JWTManager, get_jwt, get_jwt_identity, unset_jwt_cookies, jwt_required
 from flask_cors import CORS
-from .models import db, User, Meal, Order, Caterer
+from .models import db, User, Meal, Order, Caterer, SerializerMixin
 from flask_login import current_user
 from datetime import date
 from flask_login import LoginManager, login_required
@@ -210,10 +210,12 @@ def change_password():
     return jsonify({"message": "Password changed successfully"}), 200
 
 @app.route('/meals', methods=['GET'])
+# @jwt_required
 def get_meals():
     meal_options = Meal.query.all()
-    meal_options_list = [meal_option.to_dict() for meal_option in meal_options]
+    meal_options_list = [meal_option.as_dict() for meal_option in meal_options]
     return jsonify({"meal options": meal_options_list})
+
 
 @app.route('/meals', methods=['POST'])
 def add_meal():

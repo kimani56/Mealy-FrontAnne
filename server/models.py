@@ -112,10 +112,14 @@ class Meal(db.Model, SerializerMixin):
 
     @validates('price')
     def validate_price(self, key, price):
-        if price <= 0 or price > 10000:
-            raise ValidationError('Price must be within the range of 0 to 10,000')
-        return price
-
+            try:
+                price = int(price)
+                if price <= 0 or price > 10000:
+                    raise ValidationError('Price must be within the range of 0 to 10,000')
+            except ValueError:
+                raise ValidationError('Price must be a valid integer')
+            return price
+    
 # Define Menu model
 class Menu(db.Model, SerializerMixin):
     __tablename__ = 'menus'
